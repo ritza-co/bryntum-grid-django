@@ -1,18 +1,51 @@
 import {AjaxStore, Grid, StringHelper} from './grid.module.js';
 
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+  // these HTTP methods do not require CSRF protection
+  return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+  beforeSend: function(xhr, settings) {
+      if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+          xhr.setRequestHeader("X-CSRFToken", csrftoken);
+      }
+  }
+});
+
+
 const store = new AjaxStore({
-    createUrl: "/player_info/",
-    readUrl: "/player_info/",
-    updateUrl: "/player_info/",
-    deleteUrl: "/player_info/",
-    autoLoad: true,
-    autoCommit: true,
-    httpMethods: {
+  createUrl: "/player_info/create/",
+  readUrl: "/player_info/",
+  updateUrl: "/player_info/update/",
+  deleteUrl: "/player_info/delete/",
+  autoLoad: true,
+  autoCommit: true,
+  useRestfulMethods: false,
+  httpMethods: {
       read: "GET",
       create: "POST",
-      update: "PATCH",
-      delete: "DELETE",
-    },
+      update: "POST",
+      delete: "POST",
+  },
+  
 });
 
 let newPlayerCount = 0;
